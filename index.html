@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja" manifest="site.appcache">
+<!-- http://yonows.web.fc2.com/sche1week/ -->
+<head>
+	<meta charset="UTF-8" />
+	<title>sche1week | スケジュール調整のテンプレート作成</title>
+	<link rel="apple-touch-icon-precomposed" href="./apple-touch-icon-precomposed.png"/>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="css/jquery.mobile-1.0rc1.min.css" />
+	<link rel="stylesheet" href="css/style.css" />
+	<script src="js/jquery-1.6.4.min.js"></script>
+	<script src="js/jquery.mobile-1.0rc1.min.js"></script>
+
+	<script type="text/javascript">
+	var _gaq = _gaq || [];
+	_gaq.push(['_setAccount', 'UA-39425908-1']);
+  	// _gaq.push(['_setAccount', 'UA-39426701-1']);
+  	_gaq.push(['_trackPageview']);
+
+  	(function() {
+  		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  	})();
+  	</script>
+
+  	<script type="text/javascript">
+  	function sche1week(startday, period, back, zero, lang){
+  		var str = new String();
+  		weeks = new Array("日","月","火","水","木","金","土");
+
+  		for(var i=0; i<period; i++){
+  			day = new Date();
+  			day.setDate(startday + i );
+  			m=day.getMonth()+1;
+  			d=day.getDate();
+  			w=weeks[day.getDay()];
+  			if(zero){
+  				if(m<10) { m = '0' + m; }
+  				if(d<10) { d = '0'+ d; }
+  			}
+  			if(lang=='e') {
+	  			str = str + m+'/'+d+'('+w+')'+ back + '\n';
+	  		} else {
+	  			str = str + m+'月'+d+'日('+w+')'+ back + '\n';
+	  		}
+  		}
+  		$("#schedule").val(str);
+  	}
+
+  	$(function(){
+  		date = new Date();
+  		startday = date.getDate();
+  		period = 7 * $("input[name='period']:checked").val();
+  		back = '';
+  		zero = false;
+  		lang = 'e';
+  		sche1week(startday, period, back, zero, lang);
+
+		// input#backtext change
+		$("input#backtext").keyup(function(){
+			back = $("#backtext").val();
+			if(back=='jazz' || back=='Jazz' || back=='JAZZ'){
+				back = '12昼34567';
+			}
+			sche1week(startday, period, back, zero,lang);
+		});
+
+		// format change
+		$("select#format").change(function(){
+			var f=$(this).val();
+			switch(f){
+				case "1":
+					zero=false;
+					lang='e';
+				break;
+				case "2":
+					zero=true;
+					lang='e';
+				break;
+				case "3":
+					zero=false;
+					lang='j';
+				break;
+				case "4":
+					zero=true;
+					lang='j';
+				break;
+				default:
+				break;
+			}
+
+			sche1week(startday, period, back, zero, lang);
+
+		});
+
+		// period change
+		$("input[name='period']:radio").change( function(){
+			period = 7 * $("input[name='period']:checked").val();
+			sche1week(startday, period, back, zero, lang);
+		});
+
+		// startday chenge
+		$("input[name='start']:radio").change( function(){
+			today = date.getDate();
+			var start = $("input[name='start']:checked").val();
+			if(start != 0){
+				var value = (Number(start) + 6 - date.getDay())%7;
+				st = new Date();
+				st.setDate(today + value);
+				startday = st.getDate();
+			} else {
+				startday = today;
+			}
+			sche1week(startday, period, back, zero, lang);
+		});
+	});
+</script>
+</head>
+
+<body>
+	<div data-role="page" id="top">
+		<div data-role="header" class="toppage">
+			<h1>sche1week</h1>
+			<p>スケジュール調整のテンプレートを作成</p>
+		</div>
+
+		<div data-role="content">
+			<textarea id="schedule"></textarea>
+			<input type="text" id="backtext" placeholder="曜日後のテキストを入力">
+
+			<div data-role="fieldcontain">
+				<fieldset data-role="controlgroup" data-type="horizontal">
+					<input type="radio" name="start" id="s1" value="0" checked="checked" />
+					<label for="s1">今日から</label>
+					<input type="radio" name="start" id="s2" value="1" />
+					<label for="s2">日曜から</label>
+					<input type="radio" name="start" id="s3" value="2" />
+					<label for="s3">月曜から</label>
+				</fieldset>
+
+				<fieldset data-role="controlgroup" data-type="horizontal">
+					<input type="radio" name="period" id="p1" value="1" checked="checked" />
+					<label for="p1">1週間</label>
+					<input type="radio" name="period" id="p2" value="2" />
+					<label for="p2">2週間</label>
+				</fieldset>
+
+				<select name="format" id="format">
+					<option value="1">1/1(月)</option>
+					<option value="2">01/01(月)</option>
+					<option value="3">1月1日(月)</option>
+					<option value="4">01月01日(月)</option>
+<!-- 					<option value="3">01/01(Mon)</option>
+					<option value="4">1/1(Mon)</option> -->
+				</select>
+			</div>
+
+		</div>
+
+		<script type="text/javascript"><!--
+		google_ad_client = "ca-pub-3518313162149167";
+		/* foriphone */
+		google_ad_slot = "7557764836";
+		google_ad_width = 320;
+		google_ad_height = 50;
+		//-->
+		</script>
+
+		<script type="text/javascript"
+		src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+		</script>
+
+		<div id="footer" data-role="footer">
+			<p>
+				このWebアプリはオフラインに対応しており、一度アクセスすれば地下鉄等の電波が届かない所でも使用できます。
+			</p>
+		</div>
+	</div>
+</body>
+</html>

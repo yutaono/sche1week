@@ -1,0 +1,15 @@
+CACHE MANIFEST
+#last update: 2013/03/23
+
+CACHE:
+index.html
+css/style.css
+css/jquery.mobile-1.0rc1.min.css
+js/jquery-1.6.4.min.js
+js/jquery.mobile-1.0rc1.min.js
+
+FALLBACK:
+#index.html index_offline.html
+
+NETWORK:
+*
