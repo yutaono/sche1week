@@ -10,6 +10,7 @@
 	<link rel="stylesheet" href="css/jquery.mobile-1.0rc1.min.css" />
 	<link rel="stylesheet" href="css/style.css" />
 	<script src="js/jquery-1.6.4.min.js"></script>
+
 	<script src="js/jquery.mobile-1.0rc1.min.js"></script>
 
 	<script type="text/javascript">
@@ -26,13 +27,22 @@
   	</script>
 
   	<script type="text/javascript">
-  	function sche1week(startday, period, back, zero, lang){
+  	function compDate(year, month, day, addDays){
+  		var dt = new Date(year, month, day);
+  		var baseSec = dt.getTime();
+  		var addSec = addDays * 86400000;
+  		var targetSec = baseSec + addSec;
+  		dt.setTime(targetSec);
+  		return dt;
+  	}
+
+  	function sche1week(start, period, back, zero, lang){
   		var str = new String();
   		weeks = new Array("日","月","火","水","木","金","土");
 
   		for(var i=0; i<period; i++){
   			day = new Date();
-  			day.setDate(startday + i );
+  			day = compDate(start.getFullYear(), start.getMonth(), start.getDate(), i);
   			m=day.getMonth()+1;
   			d=day.getDate();
   			w=weeks[day.getDay()];
@@ -51,12 +61,12 @@
 
   	$(function(){
   		date = new Date();
-  		startday = date.getDate();
+  		today = date;
   		period = 7 * $("input[name='period']:checked").val();
   		back = '';
   		zero = false;
   		lang = 'e';
-  		sche1week(startday, period, back, zero, lang);
+  		sche1week(date, period, back, zero, lang);
 
 		// input#backtext change
 		$("input#backtext").keyup(function(){
@@ -64,7 +74,7 @@
 			if(back=='jazz' || back=='Jazz' || back=='JAZZ'){
 				back = '12昼34567';
 			}
-			sche1week(startday, period, back, zero,lang);
+			sche1week(date, period, back, zero,lang);
 		});
 
 		// format change
@@ -90,30 +100,29 @@
 				default:
 				break;
 			}
-
-			sche1week(startday, period, back, zero, lang);
-
+			sche1week(date, period, back, zero, lang);
 		});
 
 		// period change
 		$("input[name='period']:radio").change( function(){
 			period = 7 * $("input[name='period']:checked").val();
-			sche1week(startday, period, back, zero, lang);
+			sche1week(date, period, back, zero, lang);
 		});
 
 		// startday chenge
 		$("input[name='start']:radio").change( function(){
-			today = date.getDate();
+			year = today.getFullYear();
+			month = today.getMonth();
+			day = today.getDate();
 			var start = $("input[name='start']:checked").val();
 			if(start != 0){
-				var value = (Number(start) + 6 - date.getDay())%7;
-				st = new Date();
-				st.setDate(today + value);
-				startday = st.getDate();
+				var value = (Number(start) + 6 - today.getDay())%7;
+				st = compDate(year, month, day, value);
 			} else {
-				startday = today;
+				st = today;
 			}
-			sche1week(startday, period, back, zero, lang);
+			date = st;
+			sche1week(st, period, back, zero, lang);
 		});
 	});
 </script>
