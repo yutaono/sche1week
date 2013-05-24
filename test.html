@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<!-- <html lang="ja" manifest="site.appcache"> -->
+<html lang="ja">
+<!-- http://www.snake4.mobi/sche1week/ -->
+<head>
+	<meta charset="utf-8">
+	<title>sche1week</title>
+	<!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no"> -->
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no"/>
+	<link rel="apple-touch-icon-precomposed" href="./apple-touch-icon-precomposed.png"/>
+	<!-- <meta name="apple-mobile-web-app-capable" content="yes" /> -->
+	<!-- <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /> -->
+	<meta name="description" content="スケジュール調整のテンプレート作成">
+	<meta name="author" content="yutaono">
+
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<script type="text/javascript" src="./js/jquery.selectboxutils-0.1.0.js"></script>
+
+	<script type="text/javascript">
+	function initialYMD(element) {
+		var array = ['year', 'month', 'day'];
+		var str = ['年', '月', '日'];
+		var start, end;
+		for(var i=0; i<array.length; i++){
+			$(element).append('<select class="'+array[i]+'"></select>');
+			switch(array[i]) {
+				case 'year':
+					start = 2010;
+					end = 2014;
+					break;
+				case 'month':
+					start = 1;
+					end = 12;
+					break;
+				case 'day':
+					start = 1;
+					end = 31;
+					break;
+				default:
+					break;
+			}
+
+			for(var j=start; j<=end; j++) {
+				$(element+' select.'+array[i]).append('<option value="'+j+'">'+j+str[i]+'</option');
+			}
+		}
+	}
+
+	function compDate(year, month, day, addDays){
+		var dt = new Date(year, month, day);
+		var baseSec = dt.getTime();
+		var addSec = addDays * 86400000;
+		var targetSec = baseSec + addSec;
+		dt.setTime(targetSec);
+		return dt;
+	}
+
+	function setYMD(elem, y, m, d) {
+		$(elem+" select.year").val(y);
+		$(elem+" select.month").val(m);
+		$(elem+" select.day").val(d);
+	}
+
+	function sche1week(start, end, back, zero, lang, week){
+		var str = new String();
+		var weeks = new Array("日","月","火","水","木","金","土");
+		var day = new Date();
+		var period = Math.ceil((end-start)/(24*60*60*1000));
+
+		for(var i=0; i<period+1; i++){
+			day = compDate(start.getFullYear(), start.getMonth(), start.getDate(), i);
+			var y=day.getFullYear();
+			var m=day.getMonth()+1;
+			var d=day.getDate();
+			var w=weeks[day.getDay()];
+
+			if(week==1 && (w=='土' || w=='日')) { //休日のみ
+				continue;
+			} else if(week==2 && w!='土' && w!='日') { //平日のみ
+				continue;
+			}
+
+			if(zero){
+				if(m<10) { m = '0' + m; }
+				if(d<10) { d = '0'+ d; }
+			}
+			if(lang=='e') {
+				str = str + m+'/'+d+'('+w+')'+ back + '\n';
+			} else {
+				str = str + m+'月'+d+'日('+w+')'+ back + '\n';
+			}
+		}
+		$("#schedule").val(str);
+	}
+
+	$(function(){
+		var date = new Date();
+		var today = date;
+		// var period = 7 * $("input[name='period']:checked").val();
+		var back = '';
+		var zero = false;
+		var lang = 'e';
+		var week = 0; // 0:全日, 1:平日のみ, 2:休日のみ
+		initialYMD('#start_ymd');
+		initialYMD('#end_ymd');
+
+		setYMD('#start_ymd', date.getFullYear(), date.getMonth()+1, date.getDate());
+		var endday = compDate(date.getFullYear(), date.getMonth(), date.getDate(), 6);
+		setYMD('#end_ymd', endday.getFullYear(), endday.getMonth()+1, endday.getDate());
+
+		sche1week(date, endday, back, zero, lang, week);
+
+		// #start_ymd select or #end_ymd selectchange
+		$("#start_ymd select").change(function(){
+			var sy = $("#start_ymd select.year").val();
+			var sm = $("#start_ymd select.month").val();
+			var sd = $("#start_ymd select.day").val();
+			// console.log(sy+sm+sd);
+			var newdate = new Date(sy, sm-1, sd);
+			console.log(newdate);
+			sche1week(newdate, endday, back, zero, lang, week);
+		});
+		$("#end_ymd select").change(function(){
+			var ey = $("#end_ymd select.year").val();
+			var em = $("#end_ymd select.month").val();
+			var ed = $("#end_ymd select.day").val();
+			// console.log(sy+sm+sd);
+			endday = new Date(ey, em-1, ed);
+			console.log(endday);
+			sche1week(date, endday, back, zero, lang, week);
+		});
+
+		// input#backtext change
+		$("input#backtext").keyup(function(){
+			back = $("#backtext").val();
+			if(back=='jazz' || back=='Jazz' || back=='JAZZ'){
+				back = '12昼34567';
+			}
+			sche1week(date, endday, back, zero,lang, week);
+		});
+
+		// format change
+		$("select#format").change(function(){
+			var f=$(this).val();
+			switch(f){
+				case "1":
+				zero=false;
+				lang='e';
+				break;
+				case "2":
+				zero=true;
+				lang='e';
+				break;
+				case "3":
+				zero=false;
+				lang='j';
+				break;
+				case "4":
+				zero=true;
+				lang='j';
+				break;
+				default:
+				break;
+			}
+			sche1week(date, endday, back, zero, lang, week);
+		});
+
+		// startday chenge
+		$("select#start").change( function(){
+			year = today.getFullYear();
+			month = today.getMonth();
+			day = today.getDate();
+			// var start = $("input[name='start']:checked").val();
+			var start = $(this).val();
+			if(start != '0'){
+				var value = (Number(start) + 6 - today.getDay())%7;
+				console.log(value);
+				st = compDate(year, month, day, value);
+			} else {
+				st = today;
+			}
+			setYMD('#start_ymd', st.getFullYear(), st.getMonth()+1, st.getDate());
+			endday = compDate(st.getFullYear(), st.getMonth(), st.getDate(), 6);
+			setYMD('#end_ymd', endday.getFullYear(), endday.getMonth()+1, endday.getDate());
+			date = st;
+			sche1week(st, endday, back, zero, lang, week);
+		});
+
+		$('input[name="wd"]:radio').change( function(){
+			week = $(this).val();
+			sche1week(date, endday, back, zero, lang, week);
+		});
+
+	});
+</script>
+
+	<!-- Le styles -->
+	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="css/bootstrap-responsive.min.css">
+
+	<style>
+	html, body {
+		/*width: 100%;*/
+		margin-left: -8px;
+	}
+
+	#container {
+		margin-left: 0 !important;
+	}
+
+	#input_parts textarea, #input_parts input{
+		-web-kit-border-radius: 0;
+		-moz-border-radius: 0;
+		border-radius: 0;
+	}
+
+	textarea {
+		width: 100%;
+		height: 160px;
+		resize: none;
+		margin-bottom: 0;
+	}
+
+	input#backtext {
+		background-color: #f9f9f9;
+		margin-top: -1px;
+		width: 100%;
+	}
+
+	.control-group {
+		width: 50%;
+		float: left;
+	}
+
+	#format_cg {
+		width: 100%;
+	}
+
+
+	#start_ymd select , #end_ymd select{
+		width: 80px;
+	}
+	</style>
+
+	<style type="text/css" media="screen">
+	<!--
+			html,
+			body {
+				height: 100%;
+				/* The html and body elements cannot have any padding or margin. */
+			}
+
+			/* Wrapper for page content to push down footer */
+			#wrap {
+				min-height: 100%;
+				height: auto !important;
+				height: 100%;
+				/* Negative indent footer by it's height */
+				/*margin: 0 auto -80px;*/
+			}
+
+			/* Set the fixed height of the footer here */
+			#push,
+			#footer {
+				height: 80px;
+			}
+			#footer {
+				padding-top: 4px;
+				background-color: #f5f5f5;
+			}
+
+			/* Lastly, apply responsive CSS fixes as necessary */
+			@media (max-width: 767px) {
+				#footer {
+					margin-left: -20px;
+					margin-right: -20px;
+					padding-left: 20px;
+					padding-right: 20px;
+					height: 120px;
+				}
+			}
+			-->
+</style>
+
+	<!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+		<!--[if lt IE 9]>
+			<script src="../assets/js/html5shiv.js"></script>
+			<![endif]-->
+
+</head>
+
+<body>
+
+	<div id="wrap">
+		<div class="container">
+			<h1>sche1week</h1>
+			<p>スケジュール調整のためのテンプレート作成</p>
+
+			<div id="input_parts">
+				<textarea id="schedule"></textarea>
+				<input type="text" id="backtext" placeholder="曜日後のテキストを入力">
+			</div>
+
+			<div id="start_ymd"></div>
+			<div id="end_ymd"></div>
+
+			<!-- <h3>開始</h3> -->
+			<div class="control-group" id="start_cg">
+				<div class="controls">
+					<select id="start">
+						<option value="0">今日から1週間</option>
+						<option value="1">次の日曜から1週間</option>
+						<option value="2">次の月曜から1週間</option>
+					</select>
+				</div>
+			</div>
+
+			<!-- <h3>フォーマット</h3> -->
+			<div class="control-group" id="format_cg">
+				<div class="controls">
+					<select id="format">
+						<option value="1">1/1(月)</option>
+						<option value="2">01/01(月)</option>
+						<option value="3">1月1日(月)</option>
+						<option value="4">01月01日(月)</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="control-group" id="weekday">
+				<div class="controls">
+					<label class="radio">
+						<input type="radio" name="wd" value="0" checked>全日
+					</label>
+					<label class="radio">
+						<input type="radio" name="wd" value="1" >平日のみ
+					</label>
+					<label class="radio">
+						<input type="radio" name="wd" value="2" >休日のみ
+					</label>
+				</div>
+			</div>
+
+
+		</div> <!-- /container -->
+	</div>
+
+	<div id="footer">
+		<div class="container">
+			<p>
+				このwebアプリはオフラインに対応しており、一度アクセスすれば地下鉄などの電波が届かない場所でも使用できます。
+			</p>
+			<div style="float: right">
+				return to <a href="../">www.snake4.mobi</a><br>
+				contact to <a href="https://twitter.com/yutaono/">@yutaono</a>
+			</div>
+		</div>
+	</div>
+		<!-- Le javascript
+		================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<!--
+		<script src="../assets/js/jquery.js"></script>
+	-->
+	<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-40099488-1', 'snake4.mobi');
+  ga('send', 'pageview');
+
+</script>
+</body>
+</html>

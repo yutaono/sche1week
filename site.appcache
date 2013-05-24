@@ -1,0 +1,16 @@
+CACHE MANIFEST
+#last update: 2013/04/25
+# version 3
+
+CACHE:
+index.html
+css/bootstrap-responsive.min.css
+css/bootstrap.min.css
+js/bootstrap.min.js
+#js/jquery.mobile-1.0rc1.min.js
+
+FALLBACK:
+#index.html index_offline.html
+
+NETWORK:
+*
